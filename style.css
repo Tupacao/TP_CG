@@ -1,0 +1,272 @@
+/* =============================================================================
+   Layout em 3 colunas: painel esquerdo | canvas central | painel direito
+   Objetivo: ocupar a altura da viewport sem rolagem vertical na página.
+   ============================================================================= */
+
+:root {
+  --bg: #0f1419;
+  --panel: #1a2332;
+  --text: #e6edf3;
+  --muted: #8b9cb3;
+  --accent: #3b82f6;
+  --accent-dim: #2563eb;
+  --danger: #ef4444;
+  --success: #22c55e;
+  --border: #2d3a4f;
+  --canvas-bg: #0b0f14;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  height: 100%;
+  margin: 0;
+}
+
+body {
+  display: flex;
+  flex-direction: column;
+  font-family: "Segoe UI", system-ui, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  overflow: hidden; /* evita scroll vertical na página inteira */
+}
+
+.app-header {
+  flex-shrink: 0;
+  padding: 0.45rem 1rem 0.55rem;
+  border-bottom: 1px solid var(--border);
+  background: linear-gradient(180deg, #151c28, var(--bg));
+}
+
+.app-header h1 {
+  margin: 0;
+  font-size: 1.05rem;
+  font-weight: 600;
+}
+
+.subtitle {
+  margin: 0.2rem 0 0;
+  color: var(--muted);
+  font-size: 0.78rem;
+}
+
+.subtitle code {
+  background: var(--panel);
+  padding: 0.05rem 0.3rem;
+  border-radius: 4px;
+  font-size: 0.85em;
+}
+
+/* Grade principal: laterais fixas (min) + centro flexível */
+.workspace {
+  flex: 1;
+  min-height: 0;
+  width: 100%;
+  display: grid;
+  grid-template-columns: minmax(200px, 15rem) minmax(0, 1fr) minmax(210px, 16rem);
+  grid-template-rows: 1fr;
+  gap: 0.65rem;
+  padding: 0.65rem;
+  align-items: stretch;
+}
+
+.panel {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 0.65rem 0.75rem;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  overflow: hidden; /* conteúdo compacto para evitar scroll nos painéis */
+}
+
+.panel__title {
+  margin: 0 0 0.45rem;
+  font-size: 0.72rem;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-weight: 600;
+}
+
+.panel__title--spaced {
+  margin-top: 0.65rem;
+}
+
+.hint {
+  font-size: 0.75rem;
+  color: var(--muted);
+  margin: 0 0 0.5rem;
+  line-height: 1.35;
+}
+
+.btn-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.32rem;
+}
+
+.btn-group.transforms {
+  margin-top: 0.15rem;
+}
+
+.mode-btn {
+  appearance: none;
+  border: 1px solid var(--border);
+  background: #243044;
+  color: var(--text);
+  padding: 0.42rem 0.5rem;
+  border-radius: 7px;
+  cursor: pointer;
+  font-size: 0.8rem;
+  text-align: left;
+  transition: background 0.15s, border-color 0.15s, transform 0.05s;
+}
+
+.mode-btn:hover {
+  background: #2c3c54;
+  border-color: #3d4f6a;
+}
+
+.mode-btn:active {
+  transform: scale(0.98);
+}
+
+.mode-btn.active {
+  background: var(--accent);
+  border-color: var(--accent-dim);
+  font-weight: 600;
+}
+
+.mode-btn.danger {
+  border-color: #7f1d1d;
+  background: #3f1518;
+}
+
+.mode-btn.danger:hover {
+  background: #5c1a1f;
+}
+
+.mode-btn.secondary {
+  margin-top: 0.45rem;
+  background: #1e293b;
+}
+
+.control-block {
+  margin-bottom: 0.55rem;
+  padding-bottom: 0.55rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.control-block:last-of-type {
+  border-bottom: none;
+  margin-bottom: 0.35rem;
+  padding-bottom: 0.35rem;
+}
+
+.control-block label {
+  display: block;
+  font-size: 0.74rem;
+  margin: 0.2rem 0 0.08rem;
+}
+
+.control-block input[type="range"] {
+  width: 100%;
+  margin-bottom: 0.15rem;
+}
+
+.apply-btn {
+  width: 100%;
+  margin-top: 0.25rem;
+  padding: 0.38rem;
+  border-radius: 7px;
+  border: 1px solid var(--success);
+  background: #14532d;
+  color: #dcfce7;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 0.78rem;
+}
+
+.apply-btn:hover {
+  filter: brightness(1.08);
+}
+
+.checkbox-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.4rem;
+  font-size: 0.74rem;
+  color: var(--muted);
+  cursor: pointer;
+  margin: 0 0 0.35rem;
+  line-height: 1.35;
+}
+
+/* Centro: canvas centralizado entre os painéis */
+.stage {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-width: 0;
+  min-height: 0;
+}
+
+.canvas-wrap {
+  background: var(--canvas-bg);
+  border: 2px solid var(--border);
+  border-radius: 10px;
+  padding: 0;
+  display: block;
+  max-width: 100%;
+  max-height: calc(100vh - 7.5rem);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.45);
+}
+
+#gfx {
+  display: block;
+  width: 100%;
+  max-width: 800px;
+  height: auto;
+  max-height: calc(100vh - 8.5rem);
+  image-rendering: pixelated;
+  cursor: crosshair;
+}
+
+.status-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem 0.9rem;
+  margin-top: 0.45rem;
+  font-size: 0.74rem;
+  color: var(--muted);
+  justify-content: center;
+}
+
+.status-bar strong {
+  color: var(--text);
+}
+
+/* Telas estreitas: empilha painéis (pode exigir scroll mínimo — prioridade: desktop acadêmico) */
+@media (max-width: 1100px) {
+  .workspace {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto auto auto;
+    overflow-y: auto;
+    align-items: stretch;
+  }
+
+  body {
+    overflow: auto;
+  }
+
+  #gfx {
+    max-height: none;
+  }
+}

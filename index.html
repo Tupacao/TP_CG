@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Sistema Gráfico — Primitivas e Algoritmos (Canvas Pixel a Pixel)</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <!-- Cabeçalho compacto para caber em 100vh sem rolagem (layout em 3 colunas) -->
+  <header class="app-header">
+    <h1>Computação Gráfica — Matriz de Pixels</h1>
+    <p class="subtitle">
+      <code>fillRect(1×1)</code> · sem <code>lineTo</code> / <code>arc</code> · sem bibliotecas
+    </p>
+  </header>
+
+  <main class="workspace" aria-label="Área principal da aplicação">
+    <!-- Painel ESQUERDO: apenas ferramentas de desenho / recorte / limpar -->
+    <aside class="panel panel--left" aria-label="Ferramentas">
+      <h2 class="panel__title">Ferramentas</h2>
+      <div class="btn-group" id="modeButtons">
+        <button type="button" data-mode="select" class="mode-btn active">Selecionar</button>
+        <button type="button" data-mode="dda" class="mode-btn">DDA</button>
+        <button type="button" data-mode="bresenham" class="mode-btn">Bresenham (reta)</button>
+        <button type="button" data-mode="circle" class="mode-btn">Circunferência</button>
+        <button type="button" data-mode="clip_cs" class="mode-btn">Recorte Cohen-Sutherland</button>
+        <button type="button" data-mode="clip_lb" class="mode-btn">Recorte Liang-Barsky</button>
+        <button type="button" data-mode="clear" class="mode-btn danger">Limpar tela</button>
+      </div>
+    </aside>
+
+    <!-- Centro: canvas + status (entre os dois painéis) -->
+    <section class="stage" aria-label="Canvas e status">
+      <div class="canvas-wrap">
+        <canvas id="gfx" width="800" height="600" aria-label="Área de desenho pixel a pixel"></canvas>
+      </div>
+      <div class="status-bar">
+        <span><strong>Modo:</strong> <span id="modeLabel">Selecionar</span></span>
+        <span><strong>Mouse:</strong> <span id="mouseLabel">—</span></span>
+        <span><strong>Objetos:</strong> <span id="objCount">0</span></span>
+        <span><strong>Selecionados:</strong> <span id="selCount">0</span></span>
+      </div>
+    </section>
+
+    <!-- Painel DIREITO: transformações, reset e visualização de recorte -->
+    <aside class="panel panel--right" aria-label="Transformações e opções">
+      <h2 class="panel__title">Transformações</h2>
+      <p class="hint">Aplicam-se apenas aos objetos <strong>selecionados</strong>. Use sliders + Aplicar.</p>
+
+      <div class="control-block">
+        <label>Translação Δx: <span id="txVal">0</span></label>
+        <input type="range" id="txRange" min="-400" max="400" value="0" />
+        <label>Translação Δy: <span id="tyVal">0</span></label>
+        <input type="range" id="tyRange" min="-400" max="400" value="0" />
+        <button type="button" id="applyTranslate" class="apply-btn">Aplicar translação</button>
+      </div>
+
+      <div class="control-block">
+        <label>Rotação (graus): <span id="rotVal">0</span></label>
+        <input type="range" id="rotRange" min="-180" max="180" value="0" />
+        <button type="button" id="applyRotate" class="apply-btn">Aplicar rotação</button>
+      </div>
+
+      <div class="control-block">
+        <label>Escala Sx: <span id="sxVal">1</span></label>
+        <input type="range" id="sxRange" min="10" max="300" value="100" />
+        <label>Escala Sy: <span id="syVal">1</span></label>
+        <input type="range" id="syRange" min="10" max="300" value="100" />
+        <button type="button" id="applyScale" class="apply-btn">Aplicar escala</button>
+      </div>
+
+      <div class="btn-group transforms">
+        <button type="button" id="reflectX" class="mode-btn">Reflexão X</button>
+        <button type="button" id="reflectY" class="mode-btn">Reflexão Y</button>
+        <button type="button" id="reflectXY" class="mode-btn">Reflexão XY (diagonal)</button>
+      </div>
+
+      <h2 class="panel__title panel__title--spaced">Recorte &amp; reset</h2>
+      <label class="checkbox-row">
+        <input type="checkbox" id="showPreClip" />
+        Mostrar retas antes do último recorte (cinza)
+      </label>
+      <button type="button" id="resetBtn" class="mode-btn secondary">Reset (tudo)</button>
+    </aside>
+  </main>
+
+  <script src="script.js"></script>
+</body>
+</html>

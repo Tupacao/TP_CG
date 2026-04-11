@@ -48,19 +48,6 @@ body {
   font-weight: 600;
 }
 
-.subtitle {
-  margin: 0.2rem 0 0;
-  color: var(--muted);
-  font-size: 0.78rem;
-}
-
-.subtitle code {
-  background: var(--panel);
-  padding: 0.05rem 0.3rem;
-  border-radius: 4px;
-  font-size: 0.85em;
-}
-
 /* Grade principal: laterais fixas (min) + centro flexível */
 .workspace {
   flex: 1;

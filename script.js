@@ -297,11 +297,7 @@
     }
     return { x: o.xc, y: o.yc };
   }
-
-  function translatePoint(p, dx, dy) {
-    return { x: p.x + dx, y: p.y + dy };
-  }
-
+  
   function rotatePointAround(p, cx, cy, deg) {
     const rad = (deg * Math.PI) / 180;
     const cos = Math.cos(rad);

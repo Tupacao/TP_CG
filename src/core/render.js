@@ -12,7 +12,9 @@ import {
   drawPixelCross,
 } from '../algorithms/bresenham.js';
 import { drawCircleBresenham } from '../algorithms/circle.js';
-import { bboxLine, bboxCircle } from '../utils/geometry.js';
+import { drawBezierCurve, drawBezierControlHull } from '../algorithms/bezier.js';
+import { drawHermiteCurve, drawHermiteControlHull } from '../algorithms/hermite.js';
+import { bboxLine, bboxCircle, bboxBezier, bboxHermite } from '../utils/geometry.js';
 import { decayClickFlashes } from '../feedback/clickFeedback.js';
 import { updateHud } from '../ui/hud.js';
 
@@ -29,6 +31,12 @@ function drawObject(plot, state, o) {
     }
   } else if (o.type === 'circle') {
     drawCircleBresenham(plot, o.xc, o.yc, o.r, stroke);
+  } else if (o.type === 'bezier') {
+    const bezierO = /** @type {*} */ (o);
+    drawBezierCurve(plot, bezierO.x0, bezierO.y0, bezierO.x1, bezierO.y1, bezierO.x2, bezierO.y2, bezierO.x3, bezierO.y3, stroke);
+  } else if (o.type === 'hermite') {
+    const hermiteO = /** @type {*} */ (o);
+    drawHermiteCurve(plot, hermiteO.x0, hermiteO.y0, hermiteO.x1, hermiteO.y1, hermiteO.tx0, hermiteO.ty0, hermiteO.tx1, hermiteO.ty1, stroke);
   }
 }
 
@@ -38,15 +46,35 @@ function drawObject(plot, state, o) {
 function drawSelectionHighlights(plot, state) {
   for (const o of state.objects) {
     if (!state.selectedIds.has(o.id)) continue;
-    const bb = o.type === 'line' ? bboxLine(/** @type {*} */ (o)) : bboxCircle(/** @type {*} */ (o));
-    drawRectOutlineBresenham(
-      plot,
-      Math.floor(bb.xmin),
-      Math.floor(bb.ymin),
-      Math.floor(bb.xmax),
-      Math.floor(bb.ymax),
-      palette.selectedHull
-    );
+    let bb;
+    if (o.type === 'line') {
+      bb = bboxLine(/** @type {*} */ (o));
+    } else if (o.type === 'circle') {
+      bb = bboxCircle(/** @type {*} */ (o));
+    } else if (o.type === 'bezier') {
+      bb = bboxBezier(/** @type {*} */ (o));
+    } else if (o.type === 'hermite') {
+      bb = bboxHermite(/** @type {*} */ (o));
+    }
+    if (bb) {
+      drawRectOutlineBresenham(
+        plot,
+        Math.floor(bb.xmin),
+        Math.floor(bb.ymin),
+        Math.floor(bb.xmax),
+        Math.floor(bb.ymax),
+        palette.selectedHull
+      );
+    }
+
+    // Desenha cascos de controle para visualização
+    if (o.type === 'bezier') {
+      const bezierO = /** @type {*} */ (o);
+      drawBezierControlHull(plot, bezierO.x0, bezierO.y0, bezierO.x1, bezierO.y1, bezierO.x2, bezierO.y2, bezierO.x3, bezierO.y3, palette.selectedHull);
+    } else if (o.type === 'hermite') {
+      const hermiteO = /** @type {*} */ (o);
+      drawHermiteControlHull(plot, hermiteO.x0, hermiteO.y0, hermiteO.x1, hermiteO.y1, hermiteO.tx0, hermiteO.ty0, hermiteO.tx1, hermiteO.ty1, palette.selectedHull);
+    }
   }
 }
 
@@ -104,6 +132,48 @@ export function render(state) {
       Math.floor(Math.max(p0.y, state.mouse.y)),
       palette.rubber
     );
+  }
+
+  // Preview de curva de Bézier (4 pontos de controle)
+  if (state.mode === 'bezier' && state.pendingPoints.length > 0) {
+    const points = state.pendingPoints;
+    if (points.length === 1) {
+      // Mostrar ponto de controle P0
+      drawPixelCross(plot, points[0].x, points[0].y, palette.rubber);
+    } else if (points.length === 2) {
+      // Mostrar P0, P1 e linha entre eles
+      drawLineBresenham(plot, points[0].x, points[0].y, points[1].x, points[1].y, palette.rubber);
+      drawPixelCross(plot, points[0].x, points[0].y, palette.rubber);
+      drawPixelCross(plot, points[1].x, points[1].y, palette.rubber);
+    } else if (points.length === 3) {
+      // Mostrar P0, P1, P2 e polígono de controle
+      drawLineBresenham(plot, points[0].x, points[0].y, points[1].x, points[1].y, palette.rubber);
+      drawLineBresenham(plot, points[1].x, points[1].y, points[2].x, points[2].y, palette.rubber);
+      drawPixelCross(plot, points[0].x, points[0].y, palette.rubber);
+      drawPixelCross(plot, points[1].x, points[1].y, palette.rubber);
+      drawPixelCross(plot, points[2].x, points[2].y, palette.rubber);
+    }
+  }
+
+  // Preview de curva de Hermite (2 pontos + 2 tangentes com 4 cliques totais)
+  if (state.mode === 'hermite' && state.pendingPoints.length > 0) {
+    const points = state.pendingPoints;
+    if (points.length === 1) {
+      // Mostrar ponto P0
+      drawPixelCross(plot, points[0].x, points[0].y, palette.rubber);
+    } else if (points.length === 2) {
+      // Mostrar P0, P1 e linha entre eles
+      drawLineBresenham(plot, points[0].x, points[0].y, points[1].x, points[1].y, palette.rubber);
+      drawPixelCross(plot, points[0].x, points[0].y, palette.rubber);
+      drawPixelCross(plot, points[1].x, points[1].y, palette.rubber);
+    } else if (points.length === 3) {
+      // Mostrar P0, P1 e tangente inicial T0
+      drawLineBresenham(plot, points[0].x, points[0].y, points[1].x, points[1].y, palette.rubber);
+      drawLineBresenham(plot, points[0].x, points[0].y, points[2].x, points[2].y, palette.rubber);
+      drawPixelCross(plot, points[0].x, points[0].y, palette.rubber);
+      drawPixelCross(plot, points[1].x, points[1].y, palette.rubber);
+      drawPixelCross(plot, points[2].x, points[2].y, palette.rubber);
+    }
   }
 
   if (state.mode === 'select' && state.selectDrag) {

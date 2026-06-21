@@ -36,6 +36,7 @@ function onClearScreen() {
 function onModeChange(mode) {
   appState.mode = /** @type {*} */ (mode);
   appState.pendingPoint = null;
+  appState.pendingPoints = [];
   appState.selectDrag = null;
   clearClickFlashes(appState);
   logAction('Modo alterado.', { mode });
